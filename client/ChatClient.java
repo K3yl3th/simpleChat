@@ -77,6 +77,27 @@ public class ChatClient extends AbstractClient
       quit();
     }
   }
+
+	/**
+	 * This method overrides the method in the AbstractClient class. Prints a
+	 * warning when closing the connection to the server.
+	 */
+	protected void connectionClosed() {
+		clientUI.display("The connection to the server was closed. Closing program.");
+	}
+
+	/**
+	 * This method overrides the method in the AbstractClient class. Prints an error
+	 * message and stops the program when an error with the server's connection
+	 * occurs.
+	 * 
+	 * @param exception
+	 *            the exception raised.
+	 */
+	protected void connectionException(Exception exception) {
+		clientUI.display("Error from server.");
+		quit();
+	}
   
   /**
    * This method terminates the client.
