@@ -83,7 +83,7 @@ public class ChatClient extends AbstractClient
 	 * warning when closing the connection to the server.
 	 */
 	protected void connectionClosed() {
-		clientUI.display("The connection to the server was closed. Closing program.");
+		clientUI.display("The connection to the server was closed.");
 	}
 
 	/**
@@ -95,8 +95,16 @@ public class ChatClient extends AbstractClient
 	 *            the exception raised.
 	 */
 	protected void connectionException(Exception exception) {
-		clientUI.display("Error from server.");
+		clientUI.display("Error from server. Closing program.");
 		quit();
+	}
+
+	/**
+	 * This method overrides the method in the AbstractClient class. Prints a
+	 * message upon connection to the server.
+	 */
+	protected void connectionEstablished() {
+		clientUI.display("Connection to server started.");
 	}
   
   /**

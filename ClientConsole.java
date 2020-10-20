@@ -86,7 +86,90 @@ public class ClientConsole implements ChatIF
       while (true) 
       {
         message = fromConsole.nextLine();
-        client.handleMessageFromClientUI(message);
+        
+        if (message != null && message.startsWith("#")) 
+        {
+        	if (message.length() > 1) {        		
+        		String command = message.substring(1).split(" ")[0];
+        		
+        		switch (command) {
+        		
+	        		case "quit":
+	        			
+	        			display("Closing program.");
+	        			client.quit();
+	        			break;
+	        			
+	        		case "logoff":
+	        			
+	        			client.closeConnection();
+	        			break;
+	        			
+	        		case "sethost":
+	        			
+	        			if (client.isConnected()) {
+	        				display("ERROR: Close the client before changing hosts.");
+	        			}
+	        			else if (message.split(" ").length != 2) {
+	        				display("ERROR: Wrong command format. Use #sethost <host>.");
+	        			}
+	        			else {
+	        				String host = message.split(" ")[1];
+	        				display(String.format("Host is now %s.", host));
+	        				client.setHost(host);
+	        			}
+	        			break;
+	        			
+	        		case "setport":
+	        			
+	        			if (client.isConnected()) {
+	        				display("ERROR: Close the client before changing ports.");
+	        			}
+	        			else if (message.split(" ").length != 2) {
+	        				display("ERROR: Wrong command format. Use #setport <port>.");
+	        			}
+	        			else {
+	        				try {
+		        				int port = Integer.parseInt(message.split(" ")[1]);
+		        				display(String.format("Port is now %d.", port));
+		        				client.setPort(port);
+	        				}
+	        				catch (NumberFormatException e) {
+	        					display("ERROR: Wrong port format. Please enter an integer as port.");
+	        				}
+	        			}
+	        			break;
+	        			
+	        		case "login":
+	        			
+	        			if (client.isConnected()) {
+	        				display("ERROR: Client already connected.");
+	        			}
+	        			else {
+	        				client.openConnection();
+	        			}
+	        			break;
+	        			
+	        		case "gethost":
+	        			
+	        			display(String.format("Host: %s", client.getHost()));
+	        			break;
+	        			
+	        		case "getport":
+	        			
+	        			display(String.format("Port: %d", client.getPort()));
+	        			break;
+	        			
+	        		default:
+	        			
+	        			display("Did not recognize the command");
+	        			break;
+        		}
+        	}
+        }
+        else {        	
+        	client.handleMessageFromClientUI(message);
+        }
       }
     } 
     catch (Exception ex) 

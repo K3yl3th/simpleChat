@@ -3,6 +3,7 @@
 // license found at www.lloseng.com 
 
 import java.io.*;
+import common.*;
 import ocsf.server.*;
 
 /**
@@ -24,6 +25,8 @@ public class EchoServer extends AbstractServer
    */
   final public static int DEFAULT_PORT = 5555;
   
+  ServerConsole serverUI;
+  
   //Constructors ****************************************************
   
   /**
@@ -34,6 +37,14 @@ public class EchoServer extends AbstractServer
   public EchoServer(int port) 
   {
     super(port);
+    serverUI = new ServerConsole(port);
+    serverUI.accept();
+  }
+  
+  public EchoServer(int port, ServerConsole serverUI) throws IOException {
+	  super(port);
+	  this.serverUI = serverUI;
+	  listen();
   }
 
   
@@ -48,7 +59,7 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
+    serverUI.display("Message received: " + msg + " from " + client);
     this.sendToAllClients(msg);
   }
     
@@ -58,8 +69,7 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStarted()
   {
-    System.out.println
-      ("Server listening for connections on port " + getPort());
+	  serverUI.display("Server listening for connections on port " + getPort());
   }
   
   /**
@@ -68,8 +78,7 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStopped()
   {
-    System.out.println
-      ("Server has stopped listening for connections.");
+	  serverUI.display("Server has stopped listening for connections.");
   }
 
   /**
@@ -79,7 +88,7 @@ public class EchoServer extends AbstractServer
    */
   protected void clientConnected(ConnectionToClient client) 
   {
-	System.out.println(String.format("The client %s connected to the server.", client.toString()));  
+	  serverUI.display(String.format("The client %s connected to the server.", client.toString()));  
   }
 
   /**
@@ -90,7 +99,7 @@ public class EchoServer extends AbstractServer
    */
   synchronized protected void clientDisconnected(ConnectionToClient client) 
   {
-	System.out.println(String.format("The client %s disconnected from the server", client.toString()));
+	  serverUI.display(String.format("The client %s disconnected from the server", client.toString()));
   }
 
   /**
@@ -105,7 +114,7 @@ public class EchoServer extends AbstractServer
   synchronized protected void clientException(
     ConnectionToClient client, Throwable exception) 
   {
-	System.out.println(String.format("The client %s disconnected from the server", client.toString()));
+	  serverUI.display(String.format("The client %s disconnected from the server", client.toString()));
   }
   
   //Class methods ***************************************************
@@ -138,7 +147,7 @@ public class EchoServer extends AbstractServer
     } 
     catch (Exception ex) 
     {
-      System.out.println("ERROR - Could not listen for clients!");
+    	sv.serverUI.display("ERROR - Could not listen for clients!");
     }
   }
 }
