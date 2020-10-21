@@ -50,19 +50,16 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String loginID, String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
-      
-      
+      client= new ChatClient(loginID, host, port, this);
+      client.sendToServer(String.format("#login %s", loginID));
     } 
     catch(IOException exception) 
     {
-      System.out.println("Error: Can't setup connection!"
-                + " Terminating client.");
-      System.exit(1);
+      System.out.println("Cannot open connection. Awaiting command.");
     }
     
     // Create scanner object to read from console
@@ -81,7 +78,7 @@ public class ClientConsole implements ChatIF
     try
     {
 
-      String message;
+      String message = "";
 
       while (true) 
       {
@@ -96,7 +93,7 @@ public class ClientConsole implements ChatIF
         		
 	        		case "quit":
 	        			
-	        			display("Closing program.");
+	        			System.out.println("Closing program.");
 	        			client.quit();
 	        			break;
 	        			
@@ -108,14 +105,14 @@ public class ClientConsole implements ChatIF
 	        		case "sethost":
 	        			
 	        			if (client.isConnected()) {
-	        				display("ERROR: Close the client before changing hosts.");
+	        				System.out.println("ERROR: Close the client before changing hosts.");
 	        			}
 	        			else if (message.split(" ").length != 2) {
-	        				display("ERROR: Wrong command format. Use #sethost <host>.");
+	        				System.out.println("ERROR: Wrong command format. Use #sethost <host>.");
 	        			}
 	        			else {
 	        				String host = message.split(" ")[1];
-	        				display(String.format("Host is now %s.", host));
+	        				System.out.println(String.format("Host set to: %s.", host));
 	        				client.setHost(host);
 	        			}
 	        			break;
@@ -123,19 +120,19 @@ public class ClientConsole implements ChatIF
 	        		case "setport":
 	        			
 	        			if (client.isConnected()) {
-	        				display("ERROR: Close the client before changing ports.");
+	        				System.out.println("ERROR: Close the client before changing ports.");
 	        			}
 	        			else if (message.split(" ").length != 2) {
-	        				display("ERROR: Wrong command format. Use #setport <port>.");
+	        				System.out.println("ERROR: Wrong command format. Use #setport <port>.");
 	        			}
 	        			else {
 	        				try {
 		        				int port = Integer.parseInt(message.split(" ")[1]);
-		        				display(String.format("Port is now %d.", port));
+		        				System.out.println(String.format("Port set to: %d.", port));
 		        				client.setPort(port);
 	        				}
 	        				catch (NumberFormatException e) {
-	        					display("ERROR: Wrong port format. Please enter an integer as port.");
+	        					System.out.println("ERROR: Wrong port format. Please enter an integer as port.");
 	        				}
 	        			}
 	        			break;
@@ -143,26 +140,33 @@ public class ClientConsole implements ChatIF
 	        		case "login":
 	        			
 	        			if (client.isConnected()) {
-	        				display("ERROR: Client already connected.");
+	        				System.out.println("ERROR: Client already connected.");
 	        			}
 	        			else {
+	        				if (message.split(" ").length > 1) {
+	        					client.setLoginID(message.split(" ")[1]);
+	        				}
+	        				else {
+	        					System.out.println("Using default login ID " + client.getLoginID());
+	        				}
 	        				client.openConnection();
+	        			    client.sendToServer(String.format("#login %s", client.getLoginID()));
 	        			}
 	        			break;
 	        			
 	        		case "gethost":
 	        			
-	        			display(String.format("Host: %s", client.getHost()));
+	        			System.out.println(String.format("Host: %s", client.getHost()));
 	        			break;
 	        			
 	        		case "getport":
 	        			
-	        			display(String.format("Port: %d", client.getPort()));
+	        			System.out.println(String.format("Port: %d", client.getPort()));
 	        			break;
 	        			
 	        		default:
 	        			
-	        			display("Did not recognize the command");
+	        			System.out.println("Did not recognize the command");
 	        			break;
         		}
         	}
@@ -200,23 +204,31 @@ public class ClientConsole implements ChatIF
    */
   public static void main(String[] args) 
   {
+	String loginID;
     String host = "localhost";
     int port = DEFAULT_PORT;
     
-    if (args.length > 0) {
-    	host = args[0];
+    if (args.length < 1) {
+    	System.out.println("ERROR - No login ID specified. Connection aborted.");
+    	return;
     }
     
+    loginID = args[0];
+    
     if (args.length > 1) {
+    	host = args[1];
+    }
+    
+    if (args.length > 2) {
     	try {
-    		port = Integer.parseInt(args[1]);
+    		port = Integer.parseInt(args[2]);
     	}
     	catch (NumberFormatException e) {
     		System.out.println(String.format("Wrong port format. Using default port %s.", DEFAULT_PORT));
     	}
     }
     
-    ClientConsole chat= new ClientConsole(host, port);
+    ClientConsole chat= new ClientConsole(loginID, host, port);
     chat.accept();  //Wait for console data
   }
 }

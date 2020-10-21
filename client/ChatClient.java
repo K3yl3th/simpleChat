@@ -26,6 +26,8 @@ public class ChatClient extends AbstractClient
    * the display method in the client.
    */
   ChatIF clientUI; 
+  
+  String loginID;
 
   
   //Constructors ****************************************************
@@ -38,12 +40,16 @@ public class ChatClient extends AbstractClient
    * @param clientUI The interface type variable.
    */
   
-  public ChatClient(String host, int port, ChatIF clientUI) 
+  public ChatClient(String loginID, String host, int port, ChatIF clientUI) 
     throws IOException 
   {
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
-    openConnection();
+    this.loginID = loginID;
+    try {
+    	openConnection();
+    }
+    catch (IOException e) {}
   }
 
   
@@ -83,7 +89,7 @@ public class ChatClient extends AbstractClient
 	 * warning when closing the connection to the server.
 	 */
 	protected void connectionClosed() {
-		clientUI.display("The connection to the server was closed.");
+		System.out.println("Connection closed.");
 	}
 
 	/**
@@ -95,8 +101,9 @@ public class ChatClient extends AbstractClient
 	 *            the exception raised.
 	 */
 	protected void connectionException(Exception exception) {
-		clientUI.display("Error from server. Closing program.");
-		quit();
+		System.out.println("WARNING - The server has stopped listening for connections\n" + 
+			"SERVER SHUTTING DOWN! DISCONNECTING!\n" + 
+			"Abnormal termination of connection");
 	}
 
 	/**
@@ -104,7 +111,7 @@ public class ChatClient extends AbstractClient
 	 * message upon connection to the server.
 	 */
 	protected void connectionEstablished() {
-		clientUI.display("Connection to server started.");
+		System.out.println(String.format("%s has logged on.", loginID));
 	}
   
   /**
@@ -118,6 +125,14 @@ public class ChatClient extends AbstractClient
     }
     catch(IOException e) {}
     System.exit(0);
+  }
+  
+  public String getLoginID() {
+	  return loginID;
+  }
+  
+  public void setLoginID(String value) {
+	  loginID = value;
   }
 }
 //End of ChatClient class

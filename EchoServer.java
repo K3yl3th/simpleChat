@@ -59,8 +59,24 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    serverUI.display("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+	String message = msg.toString();
+	
+	System.out.println("Message received: " + msg + " from " + client.getInfo("loginID"));
+	
+	if(message.startsWith("#login") && client.getInfo("loginID") == null) {
+		client.setInfo("loginID", message.split(" ")[1]);
+		System.out.println(String.format("%s has logged on.", message.split(" ")[1]));
+	}
+	else if(message.startsWith("#login")) {
+		try {
+			client.sendToClient("ERROR - Restricted command. Now disconnecting.");
+			client.close();
+		}
+		catch (IOException e) {}
+	}
+	else {
+	    this.sendToAllClients(client.getInfo("loginID") + ": " + msg);
+	}
   }
     
   /**
@@ -69,7 +85,7 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStarted()
   {
-	  serverUI.display("Server listening for connections on port " + getPort());
+	  System.out.println("Server listening for connections on port " + getPort());
   }
   
   /**
@@ -78,7 +94,7 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStopped()
   {
-	  serverUI.display("Server has stopped listening for connections.");
+	  System.out.println("Server has stopped listening for connections.");
   }
 
   /**
@@ -88,7 +104,7 @@ public class EchoServer extends AbstractServer
    */
   protected void clientConnected(ConnectionToClient client) 
   {
-	  serverUI.display(String.format("The client %s connected to the server.", client.toString()));  
+	  System.out.println("A new client is attempting to connect to the server.");  
   }
 
   /**
@@ -99,7 +115,10 @@ public class EchoServer extends AbstractServer
    */
   synchronized protected void clientDisconnected(ConnectionToClient client) 
   {
-	  serverUI.display(String.format("The client %s disconnected from the server", client.toString()));
+	  String message = String.format("%s has disconnected.", client.getInfo("loginID"));
+	  
+	  System.out.println(message);
+	  this.sendToAllClients(message);
   }
 
   /**
@@ -114,7 +133,7 @@ public class EchoServer extends AbstractServer
   synchronized protected void clientException(
     ConnectionToClient client, Throwable exception) 
   {
-	  serverUI.display(String.format("The client %s disconnected from the server", client.toString()));
+	  clientDisconnected(client);
   }
   
   //Class methods ***************************************************
@@ -147,7 +166,7 @@ public class EchoServer extends AbstractServer
     } 
     catch (Exception ex) 
     {
-    	sv.serverUI.display("ERROR - Could not listen for clients!");
+    	System.out.println("ERROR - Could not listen for clients!");
     }
   }
 }

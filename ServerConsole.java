@@ -1,9 +1,7 @@
 import java.io.IOException;
 import java.util.Scanner;
 
-import client.ChatClient;
 import common.ChatIF;
-import ocsf.server.ConnectionToClient;
 
 public class ServerConsole implements ChatIF {
 
@@ -76,9 +74,11 @@ public class ServerConsole implements ChatIF {
 	        		switch (command) {
 	        		
 	        			case "quit":
-	        				
-	        				display("Closing program.");
+
+	        				server.stopListening();
 	        				server.close();
+	        				System.out.println("Closing program.");
+	        				System.exit(0);
 	        				break;
 	        				
 	        			case "stop":
@@ -89,35 +89,25 @@ public class ServerConsole implements ChatIF {
 	        			case "close":
 	        				
 	        				server.stopListening();
-	        				
-	        				Thread[] clientThreadList = server.getClientConnections();
-
-	        			    for (int i=0; i<clientThreadList.length; i++)
-	        			    {
-	        			      try
-	        			      {
-	        			        ((ConnectionToClient)clientThreadList[i]).close();
-	        			      }
-	        			      catch (Exception ex) {}
-	        			    }
-	        			    break;
+	        				server.close();
+	        				break;
 	        			    
 	        			case "setport":
 		        			
 		        			if (server.isListening()) {
-		        				display("ERROR: Close the client before changing ports.");
+		        				System.out.println("ERROR: Close the client before changing ports.");
 		        			}
 		        			else if (message.split(" ").length != 2) {
-		        				display("ERROR: Wrong command format. Use #setport <port>.");
+		        				System.out.println("ERROR: Wrong command format. Use #setport <port>.");
 		        			}
 		        			else {
 		        				try {
 			        				int port = Integer.parseInt(message.split(" ")[1]);
-			        				display(String.format("Port is now %d.", port));
+			        				System.out.println(String.format("Port set to: %d.", port));
 			        				server.setPort(port);
 		        				}
 		        				catch (NumberFormatException e) {
-		        					display("ERROR: Wrong port format. Please enter an integer as port.");
+		        					System.out.println("ERROR: Wrong port format. Please enter an integer as port.");
 		        				}
 		        			}
 		        			break;
@@ -125,7 +115,7 @@ public class ServerConsole implements ChatIF {
 	        			case "start":
 	        				
 	        				if (server.isListening()) {
-	        					display("ERROR: Server is already listening for connections.");
+	        					System.out.println("ERROR: Server is already listening for connections.");
 	        				}
 	        				else {
 	        					server.listen();
@@ -134,18 +124,18 @@ public class ServerConsole implements ChatIF {
 	        				
 	        			case "getport":
 	        				
-	        				display(String.format("Port: %d", server.getPort()));
+	        				System.out.println(String.format("Port: %d", server.getPort()));
 	        				break;
 	        		
 		        		default:
 		        			
-		        			display("Did not recognize the command");
+		        			System.out.println("Did not recognize the command");
 		        			break;
 	        		}
 	        	}
 	        }
 	        else {        	
-	        	message = "SERVER MSG " + message;
+	        	message = "SERVER MESSAGE: " + message;
 	        	display(message);
 	        	server.sendToAllClients(message);
 	        }
